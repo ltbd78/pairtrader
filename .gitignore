@@ -1,2 +1,7 @@
-notes.txt
+# Directories
+.ipynb_checkpoints/
+__pycache__/
 data/
+
+# Files
+notes.txt

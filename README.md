@@ -9,7 +9,7 @@ for each pair:
 # Fitting Model
 ```
 fit Y~X obtain b1
-get spread = Y - b1*X  (spread is same as residuals)
+get spread = Y - b1*X  (similar to residuals = Y - (b1*X + b0))
 get rolling moving average of spread (ideally window=60)
 get rolling standard deviation of spread (ideally window=60)
 get z = (spread - rolling_ma)/rolling_sd

@@ -34,30 +34,36 @@ class PairTrader:
                 if self.z[i] < -self.z_crit: # long spread
                     self.account.update_position('Y', n, self.Y[i]) # buy Y
                     self.account.update_position('X', -n*self.b1, self.X[i]) # sell b1*X
-                    self.logs.append((i, 'L'))
+                    stoploss = (-self.z_crit - self.z_sl)*self.sd[i] + self.ma[i]
+                    takeprofit = (-self.z_crit + self.z_tp)*self.sd[i] + self.ma[i]
+                    info = {'spread': self.spread[i], 'stoploss': stoploss, 'takeprofit': takeprofit}
+                    self.logs.append((i, 'L', info))
                 elif self.z[i] > self.z_crit: # short spread
                     self.account.update_position('Y', -n, self.Y[i]) # sell Y
                     self.account.update_position('X', n*self.b1, self.X[i]) # buy b1*X
-                    self.logs.append((i, 'S'))
+                    stoploss = (self.z_crit + self.z_sl)*self.sd[i] + self.ma[i]
+                    takeprofit = (self.z_crit - self.z_tp)*self.sd[i] + self.ma[i]
+                    info = {'spread': self.spread[i], 'stoploss': stoploss, 'takeprofit': takeprofit}
+                    self.logs.append((i, 'S', info))
             else:
                 if self.logs[-1][1] == 'L':
-                    if self.z[i] < -self.z_crit - self.z_sl:
+                    if self.spread[i] < self.logs[-1][2]['stoploss']:
                         self.account.update_position('Y', 'close', self.Y[i]) # sell Y
                         self.account.update_position('X', 'close', self.X[i]) # buy b1*X
-                        self.logs.append((i, 'SL'))
-                    elif self.z[i] > -self.z_crit + self.z_tp:
+                        self.logs.append((i, 'SL', self.spread[i]))
+                    elif self.spread[i] > self.logs[-1][2]['takeprofit']:
                         self.account.update_position('Y', 'close', self.Y[i]) # sell Y
                         self.account.update_position('X', 'close', self.X[i]) # buy b1*X
-                        self.logs.append((i, 'TP'))
+                        self.logs.append((i, 'TP', self.spread[i]))
                 elif self.logs[-1][1] == 'S':
-                    if self.z[i] > self.z_crit + self.z_sl:
+                    if self.spread[i] > self.logs[-1][2]['stoploss']:
                         self.account.update_position('Y', 'close', self.Y[i]) # buy Y
                         self.account.update_position('X', 'close', self.X[i]) # sell b1*X
-                        self.logs.append((i, 'SL'))
-                    if self.z[i] < self.z_crit - self.z_tp:
+                        self.logs.append((i, 'SL', self.spread[i]))
+                    elif self.spread[i] < self.logs[-1][2]['takeprofit']:
                         self.account.update_position('Y', 'close', self.Y[i]) # buy Y
                         self.account.update_position('X', 'close', self.X[i]) # sell b1*X
-                        self.logs.append((i, 'TP'))
+                        self.logs.append((i, 'TP', self.spread[i]))
         return self.account, self.logs
     
     def plot(self, type, figsize=(20, 10), zoom=False, markersize=78):

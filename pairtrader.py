@@ -29,7 +29,7 @@ class PairTrader:
         self.account = Account(self.trade_size)
         self.logs = []
         for i in range(self.trainval_split, len(self.Y)):
-            n = self.trade_size/self.spread[i]
+            n = self.trade_size/self.Y[i]
             if len(self.account.positions) == 0:
                 if self.z[i] < -self.z_crit: # long spread
                     self.account.update_position('Y', n, self.Y[i]) # buy Y

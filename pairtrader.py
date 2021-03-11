@@ -31,14 +31,14 @@ class PairTrader:
         for i in range(self.trainval_split, len(self.Y)):
             n = self.trade_size/self.Y[i]
             if len(self.account.positions) == 0:
-                if self.z[i] < -self.z_crit: # long spread
+                if -self.z_crit - self.z_sl < self.z[i] < -self.z_crit: # long spread
                     self.account.update_position('Y', n, self.Y[i]) # buy Y
                     self.account.update_position('X', -n*self.b1, self.X[i]) # sell b1*X
                     stoploss = (-self.z_crit - self.z_sl)*self.sd[i] + self.ma[i]
                     takeprofit = (-self.z_crit + self.z_tp)*self.sd[i] + self.ma[i]
                     info = {'spread': self.spread[i], 'stoploss': stoploss, 'takeprofit': takeprofit}
                     self.logs.append((i, 'L', info))
-                elif self.z[i] > self.z_crit: # short spread
+                elif self.z_crit < self.z[i] < self.z_crit + self.z_sl: # short spread
                     self.account.update_position('Y', -n, self.Y[i]) # sell Y
                     self.account.update_position('X', n*self.b1, self.X[i]) # buy b1*X
                     stoploss = (self.z_crit + self.z_sl)*self.sd[i] + self.ma[i]

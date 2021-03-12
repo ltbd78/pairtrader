@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.stats import *
+from statsmodels.tsa.stattools import adfuller
 
 from utils import *
 from account import *
@@ -18,9 +19,9 @@ class PairTrader:
         self.trainval_split = trainval_split
         self.window = window
         self.trade_size = trade_size
-        
+    
     def fit_model(self):
-        self.b1, self.b0 = linregress(x=self.X[:self.trainval_split], y=self.Y[:self.trainval_split])[0:2]
+        self.b1, self.b0, self.adf_p = fit_model(self.X[:self.trainval_split], self.Y[:self.trainval_split])
         self.spread = self.Y - self.b1*self.X
         self.ma = rollingMA(self.spread, self.window)
         self.sd = rollingSD(self.spread, self.window) # Note: if window is too small; sd may be 0

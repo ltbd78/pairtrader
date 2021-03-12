@@ -1,4 +1,6 @@
 import numpy as np
+from scipy.stats import *
+from statsmodels.tsa.stattools import adfuller
 
 def rollingMA(x, n):
     cumsum = np.cumsum(np.insert(x, 0, 0)) 
@@ -12,3 +14,9 @@ def rollingSD(x, n):
         window = x[i-n:i]
         sd[i-1] = np.std(window, ddof=1)
     return sd
+
+def fit_model(X, Y):
+    b1, b0 = linregress(x=X, y=Y)[0:2]
+    resids = Y - (b1*X + b0)
+    adf_p = adfuller(resids, autolag='AIC')[1] # augmented dickey fuller p-value
+    return b1, b0, adf_p

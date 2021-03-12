@@ -9,7 +9,7 @@ from account import *
 
 
 class PairTrader:
-    def __init__(self, X, Y, z_crit, z_sl, z_tp, trainval_split, window, trade_size):
+    def __init__(self, X, Y, z_crit, z_sl, z_tp, trainval_split, window, trade_size, pause_after_sl=0):
         assert len(Y) == len(X)
         self.X = np.array(X)
         self.Y = np.array(Y)
@@ -19,6 +19,7 @@ class PairTrader:
         self.trainval_split = trainval_split
         self.window = window
         self.trade_size = trade_size
+        self.pause_after_sl = pause_after_sl
     
     def fit_model(self):
         self.b1, self.b0, self.adf_p = fit_model(self.X[:self.trainval_split], self.Y[:self.trainval_split])
@@ -30,7 +31,11 @@ class PairTrader:
     def test_model(self):
         self.account = Account(self.trade_size)
         self.logs = []
+        pause = 0
         for i in range(self.trainval_split, len(self.Y)):
+            if pause > 0:
+                pause -= 1
+                continue
             n = self.trade_size/self.Y[i]
             if len(self.account.positions) == 0:
                 if -self.z_crit - self.z_sl < self.z[i] < -self.z_crit: # long spread
@@ -54,6 +59,7 @@ class PairTrader:
                         self.account.update_position('Y', 'close', self.Y[i]) # sell Y
                         self.account.update_position('X', 'close', self.X[i]) # buy b1*X
                         info = {'status': 'SL', 'spread': self.spread[i], 'balance': self.account.total_balance}
+                        pause = self.pause_after_sl
                         self.logs.append((i, info))
                     elif self.spread[i] > last_info['takeprofit']:
                         self.account.update_position('Y', 'close', self.Y[i]) # sell Y
@@ -65,6 +71,7 @@ class PairTrader:
                         self.account.update_position('Y', 'close', self.Y[i]) # buy Y
                         self.account.update_position('X', 'close', self.X[i]) # sell b1*X
                         info = {'status': 'SL', 'spread': self.spread[i], 'balance': self.account.total_balance}
+                        pause = self.pause_after_sl
                         self.logs.append((i, info))
                     elif self.spread[i] < last_info['takeprofit']:
                         self.account.update_position('Y', 'close', self.Y[i]) # buy Y
